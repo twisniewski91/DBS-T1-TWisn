@@ -1,0 +1,108 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "Instance": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "ImageId": {"Ref": "ImageId"},
+                "InstanceInitiatedShutdownBehavior": {"Ref":"InstanceInitiatedShutdownBehavior"},
+                "IamInstanceProfile": {"Ref": "IamInstanceProfile"},
+                "InstanceType": {"Ref" :"InstanceType"},
+                "KeyName": {"Ref": "KeyName"},
+                "Monitoring": {"Ref": "Monitoring"},
+                "Tags": [
+                     {
+                    "Key": "Name",
+                    "Value": "twisn-test-ec2"
+                    }
+                ]
+            } 
+        },
+
+        "Role": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+               "AssumeRolePolicyDocument": {
+                  "Statement": [{
+                     "Effect": "Allow",
+                     "Principal": {
+                        "Service": ["ec2.amazonaws.com"]
+                     },
+                     "Action": ["sts:AssumeRole"]
+                  }]
+               },
+               "Path": "/"
+            }
+         },
+
+         "IamInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+               "Path": "/",
+               "Roles": [{ "Ref": "Role" }]
+            }
+         },
+
+         "RolePolicies": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "S3PolicyTWisn",
+                "PolicyDocument": {
+                     "Version": "2012-10-17",
+                "Statement": [
+                    {
+                    "Effect": "Allow",
+        "Action": [
+                    "s3:ListAccessPointsForObjectLambda",
+                    "s3:GetAccessPoint",
+                    "s3:PutAccountPublicAccessBlock",
+                    "s3:ListAccessPoints",
+                    "s3:ListJobs",
+                    "s3:PutStorageLensConfiguration",
+                    "s3:ListMultiRegionAccessPoints",
+                    "s3:ListStorageLensConfigurations",
+                    "s3:GetAccountPublicAccessBlock",
+                    "s3:ListAllMyBuckets",
+                    "s3:PutAccessPointPublicAccessBlock",
+                    "ec2:*",
+                    "s3:CreateJob"
+                    ],
+                    
+                    "Resource": "*"
+                }
+            ]
+        },    
+               
+               "Roles": [{ "Ref": "Role" }]
+            }
+         }
+    },
+    
+    "Parameters": {
+        "ImageId": {
+            "Type": "String",
+            "Default": "ami-0022f774911c1d690",
+            "Description": "AMI image for instance"
+        },
+        "InstanceInitiatedShutdownBehavior": {
+            "Type": "String",
+            "Default": "stop",
+            "Description": "Shutdown behavior of an instance"
+        },
+        "InstanceType": {
+            "Type": "String",
+            "Default": "t2.micro",
+            "Description": "Type of instance"
+        },
+        "KeyName": {
+            "Type": "String",
+            "Default": "task1test",
+            "Description": "IAM access Key, used to access instance"
+        },
+        "Monitoring": {
+            "Type": "String",
+            "Default": "true",
+            "Description": "Detailed monitoring enablement"
+        }
+    }
+}

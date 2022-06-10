@@ -1,0 +1,124 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Resources": {
+        "S3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+                "BucketName": "twisn-t1-s3bucket",
+                "BucketEncryption": {
+                    "ServerSideEncryptionConfiguration": [
+                        {
+                            "ServerSideEncryptionByDefault": {
+                                "SSEAlgorithm": "AES256"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "S3BucketPolicy": {
+    "Type": "AWS::S3::BucketPolicy",
+    "Properties": {
+      "Bucket": {
+        "Ref": "S3Bucket"
+      },
+      "PolicyDocument": {
+        "Statement": [
+          {
+            "Action": [
+              "s3:*"
+            ],
+            "Effect": "Allow",
+            "Resource": {
+              "Fn::Join": [
+                "",
+                [
+                  "arn:aws:s3:::",
+                  {
+                    "Ref": "S3Bucket"
+                  },
+                  "/*"
+                ]
+              ]
+            },
+            "Principal": "*",
+            "Condition": {
+              "Bool": {
+                "aws:SecureTransport": "false"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "LambdaRole": {
+    "Type": "AWS::IAM::Role",
+    "Properties": {
+        "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "lambda.amazonaws.com"
+                        ]
+                    },
+                    "Action": [
+                        "sts:AssumeRole"
+                    ]
+                }
+            ]
+        },
+        "Path": "/",
+        "Policies": [
+            {
+                "PolicyName": "twisn-t1-lambda-policy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": "*",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+},
+"LambdaInstanceProfile": {
+    "Type": "AWS::IAM::InstanceProfile",
+    "Properties": {
+        "Path": "/",
+        "Roles": [
+            {
+                "Ref": "LambdaRole"
+            }
+        ]
+    }
+},
+
+"LambdaFunction": {
+    "Type": "AWS::Lambda::Function",
+    "Properties": {
+        "Role" : {
+            "Fn::GetAtt": 
+            ["LambdaRole",
+            "Arn"
+            ]
+        },
+      "Code": {
+        "S3Bucket": "s3bucket-twisn-t1",
+        "S3Key": "twisn-t1.zip"
+    },
+    "Runtime": "python3.8",
+    "Handler": "lambda_handler",
+    "Timeout": "60",
+    "FunctionName": "twisn-t1"
+}
+}
+    }
+}
